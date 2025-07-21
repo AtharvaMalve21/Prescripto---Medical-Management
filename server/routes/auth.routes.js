@@ -6,6 +6,7 @@ import {
   logoutPatient,
   loginDoctor,
   logoutDoctor,
+  doctorProfile,
 } from "../controllers/auth.controller.js";
 
 import {
@@ -29,5 +30,8 @@ router.post("/login-doctor", loginDoctor);
 
 //Doctor-Logout
 router.get("/logout-doctor", isDoctorAuthenticated, logoutDoctor);
+
+//Doctor-Profile
+router.get("/doctor-profile", isDoctorAuthenticated, doctorProfile);
 
 export default router;

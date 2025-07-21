@@ -26,6 +26,14 @@ const doctorSchema = new Schema(
     speciality: {
       type: String,
       required: true,
+      enum: [
+        "General physician",
+        "Gynecologist",
+        "Dermatologist",
+        "Pediatricians",
+        "Neurologist",
+        "Gastroenterologist",
+      ],
     },
     degree: {
       type: String,

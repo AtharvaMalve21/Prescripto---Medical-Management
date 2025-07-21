@@ -214,3 +214,26 @@ export const logoutDoctor = async (req, res) => {
     });
   }
 };
+
+export const doctorProfile = async (req, res) => {
+  try {
+    const doctor = await Doctor.findById(req.doctor._id);
+    if (!doctor) {
+      return res.status(400).json({
+        success: false,
+        message: "Doctor not found.",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: doctor,
+      message: "Doctor profile data fetched.",
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
+};

@@ -66,6 +66,7 @@ export const isDoctorAuthenticated = async (req, res, next) => {
 
 export const isAdminAuthenticated = async (req, res, next) => {
   try {
+    
     const { adminToken } = req.cookies;
     if (!adminToken) {
       return res.status(401).json({
