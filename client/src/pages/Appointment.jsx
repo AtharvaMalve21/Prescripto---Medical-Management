@@ -1,13 +1,22 @@
 import React, { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-hot-toast";
+import { assets } from "../assets/assets_frontend/assets.js";
 
 const Appointment = () => {
   const { id } = useParams();
   const [doctor, setDoctor] = useState(null);
+
+  const daysOfWeek = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+
   const [similarDoctors, setSimilarDoctors] = useState([]);
   const URI = import.meta.env.VITE_BACKEND_URI;
+  const [doctorSlots, setDoctorSlots] = useState([]);
+  const [slotIndex, setSlotIndex] = useState(0);
+  const [slotTime, setSlotTime] = useState("");
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!id) return;
@@ -39,21 +48,188 @@ const Appointment = () => {
     fetchData();
   }, [id]);
 
+  const fetchAvailableSlots = async () => {
+    setDoctorSlots([]);
+
+    const today = new Date();
+
+    for (let i = 0; i < 7; i++) {
+      const currentDate = new Date(today);
+      currentDate.setDate(today.getDate() + i);
+
+      const endTime = new Date(currentDate);
+      endTime.setHours(21, 0, 0, 0); // 9:00 PM
+
+      // Set start time
+      if (i === 0) {
+        const now = new Date();
+        if (now.getHours() >= 21) {
+          setDoctorSlots((prev) => [...prev, []]); // No slots for today
+          continue;
+        }
+
+        const nextSlot = new Date(now);
+        nextSlot.setSeconds(0);
+        nextSlot.setMilliseconds(0);
+
+        if (now.getMinutes() < 30) {
+          nextSlot.setMinutes(30);
+        } else {
+          nextSlot.setHours(now.getHours() + 1);
+          nextSlot.setMinutes(0);
+        }
+
+        currentDate.setHours(nextSlot.getHours(), nextSlot.getMinutes(), 0, 0);
+      } else {
+        currentDate.setHours(10, 0, 0, 0); // Start from 10:00 AM
+      }
+
+      const timeSlots = [];
+
+      while (currentDate < endTime) {
+        const formattedTime = currentDate.toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+
+        timeSlots.push({
+          datetime: new Date(currentDate),
+          time: formattedTime,
+        });
+
+        currentDate.setMinutes(currentDate.getMinutes() + 30);
+      }
+
+      setDoctorSlots((prev) => [...prev, timeSlots]);
+    }
+  };
+
+  useEffect(() => {
+    fetchAvailableSlots();
+  }, [doctor]);
+
+  useEffect(() => {
+    console.log(doctorSlots);
+  }, [doctorSlots]);
+
   return (
-    <div className="p-4">
+    <div className="p-4 sm:p-6">
       {doctor && (
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold mb-2">{doctor.name}</h2>
-          <p className="text-gray-600">{doctor.speciality}</p>
+        <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
+          {/* Doctor Image */}
+          <div className="sm:max-w-72 w-full">
+            <img
+              className="w-full h-auto object-cover rounded-xl border border-gray-300"
+              src={doctor.image}
+              alt={doctor.name}
+            />
+          </div>
+
+          {/* Doctor Info Card */}
+          <div className="flex-1 border border-gray-300 rounded-xl p-6 bg-white shadow-sm mt-4 sm:mt-0">
+            <h2 className="flex items-center gap-2 text-2xl font-semibold text-gray-900">
+              {doctor.name}
+              <img
+                className="w-5 h-5"
+                src={assets.verified_icon}
+                alt="verified"
+              />
+            </h2>
+
+            <div className="flex flex-wrap items-center gap-2 text-sm text-gray-600 mt-2">
+              <span>
+                {doctor.degree} - {doctor.speciality}
+              </span>
+              <span className="px-2 py-0.5 border rounded-full text-xs">
+                {doctor.experience} {doctor.experience === 1 ? "year" : "years"}
+              </span>
+            </div>
+
+            <div className="mt-4">
+              <p className="flex items-center gap-1 text-sm font-medium text-gray-900">
+                About{" "}
+                <img src={assets.info_icon} alt="info" className="w-4 h-4" />
+              </p>
+              <p className="text-sm text-gray-700 mt-1 max-w-3xl">
+                {doctor.about}
+              </p>
+            </div>
+
+            <p className="text-gray-600 font-medium mt-4">
+              Appointment Fee:{" "}
+              <span className="text-gray-800 font-semibold">
+                $ {doctor.fees}
+              </span>
+            </p>
+          </div>
         </div>
       )}
 
-      <div>
-        <h3 className="text-2xl">Similar Doctors</h3>
+      {/* Booking Slots */}
+
+      <div className="mt-8 font-medium text-gray-700">
+        <p className="text-lg mb-3">Booking Slots</p>
+
+        <div className="flex gap-4 items-center w-full overflow-x-auto pb-2">
+          {doctorSlots.length > 0 &&
+            doctorSlots.map((item, index) => (
+              <div
+                key={index}
+                className={`min-w-[100px] min-h-[150px] px-5 py-6 rounded-full cursor-pointer flex flex-col items-center justify-center transition duration-200
+            ${
+              slotIndex === index
+                ? "bg-primary text-white shadow-md"
+                : "bg-white text-gray-800 border border-gray-200 hover:bg-blue-50"
+            }`}
+                onClick={() => setSlotIndex(index)}
+              >
+                <p className="capitalize text-xl">
+                  {item[0] && daysOfWeek[item[0].datetime.getDay()]}
+                </p>
+                <p className="text-base text-xl">
+                  {item[0] && item[0].datetime.getDate()}
+                </p>
+              </div>
+            ))}
+        </div>
+      </div>
+
+      {/* Slot Times */}
+      <div className="flex items-center gap-3 overflow-x-auto mt-4 pb-1">
+        {doctorSlots.length > 0 &&
+          doctorSlots[slotIndex].map((item, index) => (
+            <p
+              onClick={() => setSlotTime(item.time)}
+              key={index}
+              className={`text-sm font-medium flex-shrink-0 px-6 py-3 rounded-[30px] cursor-pointer transition duration-200
+          ${
+            item.time === slotTime
+              ? "bg-primary text-white shadow-md"
+              : "border border-gray-300 text-gray-400 hover:bg-gray-100"
+          }`}
+            >
+              {item.time && item.time.toLowerCase()}
+            </p>
+          ))}
+      </div>
+
+      <button className="bg-primary hover:bg-primary-dark transition-colors duration-300 text-white text-base font-medium px-10 py-3 rounded-full focus:outline-none focus:ring-2 focus:ring-primary-light m-6">
+        Book an Appointment
+      </button>
+
+      {/* Similar Doctors  */}
+      <div className="flex flex-col items-center gap-4 my-16 to-gray-900 md:mx-10">
+        <h1 className="text-3xl font-medium">Top Doctors to Book</h1>
+        <p className="sm:w-1/3 text-center text-sm">
+          Simply browse through our extensive list of trusted doctors.
+        </p>
         <div className="w-full grid grid-cols-auto gap-4 pt-5 gap-y-6 px-3 sm:px-0">
           {similarDoctors.map((doctor) => (
-            <Link
-              to={`/appointment/${doctor._id}`}
+            <div
+              onClick={() => {
+                navigate(`/appointment/${doctor._id}`);
+                scrollTo(0, 0);
+              }}
               className="border border-blue-200 rounded-xl overflow-hidden cursor-pointer hover:translate-y-[-10px] transition-all duration-500"
               key={doctor._id}
             >
@@ -70,9 +246,18 @@ const Appointment = () => {
                 </p>
                 <p className="text-gray-600 text-sm">{doctor.speciality}</p>
               </div>
-            </Link>
+            </div>
           ))}
         </div>
+        <button
+          className="mt-10 px-8 py-3 rounded-full bg-primary/10 text-primary font-semibold shadow-sm hover:bg-primary/20 hover:text-primary-dark transition duration-200"
+          onClick={() => {
+            navigate("/doctors");
+            scrollTo(0, 0);
+          }}
+        >
+          View More
+        </button>
       </div>
     </div>
   );

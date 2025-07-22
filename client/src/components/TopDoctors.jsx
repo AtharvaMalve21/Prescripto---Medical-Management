@@ -14,8 +14,11 @@ const TopDoctors = () => {
       </p>
       <div className="w-full grid grid-cols-auto gap-4 pt-5 gap-y-6 px-3 sm:px-0">
         {doctors.slice(0, 10).map((doctor) => (
-          <Link
-            to={`/appointment/${doctor._id}`}
+          <div
+            onClick={() => {
+              navigate(`/appointment/${doctor._id}`);
+              scrollTo(0, 0);
+            }}
             className="border border-blue-200 rounded-xl overflow-hidden cursor-pointer hover:translate-y-[-10px] transition-all duration-500"
             key={doctor._id}
           >
@@ -30,15 +33,14 @@ const TopDoctors = () => {
               <p className="text-gray-900 text-lg font-medium">{doctor.name}</p>
               <p className="text-gray-600 text-sm">{doctor.speciality}</p>
             </div>
-          </Link>
+          </div>
         ))}
       </div>
-      <button
-        className="mt-10 px-8 py-3 rounded-full bg-primary/10 text-primary font-semibold shadow-sm hover:bg-primary/20 hover:text-primary-dark transition duration-200"
-        onClick={() => navigate("/doctors")}
-      >
-        View More
-      </button>
+      onClick=
+      {() => {
+        navigate("/doctors");
+        scrollTo(0, 0);
+      }}
     </div>
   );
 };
