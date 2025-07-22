@@ -1,5 +1,5 @@
-import React from "react";
-import { Routes, Route } from "react-router-dom";
+import React, { useContext } from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
 import Home from "./pages/Home.jsx";
 import Contact from "./pages/Contact.jsx";
 import Register from "./pages/Register";
@@ -12,8 +12,11 @@ import Appointment from "./pages/Appointment.jsx";
 import About from "./pages/About.jsx";
 import Navbar from "./components/Navbar.jsx";
 import Footer from "./components/Footer.jsx";
+import { UserContext } from "./context/UserContext.jsx";
 
 const App = () => {
+  const { user } = useContext(UserContext);
+
   return (
     <div className="mx-4 sm:mx-[10%]">
       <Navbar />
@@ -27,7 +30,10 @@ const App = () => {
         <Route path="/my-profile" element={<MyProfile />} />
         <Route path="/doctors" element={<Doctors />} />
         <Route path="/doctors/:speciality" element={<Doctors />} />
-        <Route path="/my-appointments" element={<MyAppointments />} />
+        <Route
+          path="/my-appointments"
+          element={user ? <MyAppointments /> : <Navigate to="/login" />}
+        />
         <Route path="/appointment/:id" element={<Appointment />} />
       </Routes>
       <Footer />

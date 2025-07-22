@@ -36,11 +36,15 @@ const TopDoctors = () => {
           </div>
         ))}
       </div>
-      onClick=
-      {() => {
-        navigate("/doctors");
-        scrollTo(0, 0);
-      }}
+      <button
+        className="mt-10 px-8 py-3 rounded-full bg-primary/10 text-primary font-semibold shadow-sm hover:bg-primary/20 hover:text-primary-dark transition duration-200"
+        onClick={() => {
+          navigate("/doctors");
+          scrollTo(0, 0);
+        }}
+      >
+        View More
+      </button>
     </div>
   );
 };

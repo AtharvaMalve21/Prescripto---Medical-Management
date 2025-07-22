@@ -1,6 +1,8 @@
 import User from "../models/user.model.js";
 import Doctor from "../models/doctor.model.js";
 import Appointment from "../models/appointment.model.js";
+import { transporter } from "../config/nodemailer.config.js";
+import { appointmentBookedEmailTemplate } from "../utils/emailTemplate.js";
 
 export const bookAppointment = async (req, res) => {
   try {
@@ -74,6 +76,19 @@ export const bookAppointment = async (req, res) => {
       date: Date.now(),
     });
 
+    await transporter.sendMail({
+      from: process.env.MAIL_USER,
+      to: patient.email,
+      subject: `Hi ${patient.name}, Your Appointment Has Been Confirmed!`,
+      html: appointmentBookedEmailTemplate(
+        patient.name,
+        doctor.name,
+        slotDate,
+        slotTime,
+        doctor.address
+      ),
+    });
+
     return res.status(201).json({
       success: true,
       message: "Appointment booked successfully.",
@@ -92,7 +107,9 @@ export const myAppointments = async (req, res) => {
   try {
     const appointments = await Appointment.find({
       patient: req.patient._id,
-    }).populate("patient doctor");
+    })
+      .populate("patient doctor")
+      .sort({ createdAt: -1 });
 
     return res.status(200).json({
       success: true,
@@ -111,9 +128,10 @@ export const viewAppointment = async (req, res) => {
   try {
     const { id: appointmentId } = req.params;
 
-    const appointment = await Appointment.findById(appointmentId).populate(
-      "patient doctor"
-    );
+    const appointment = await Appointment.findOne({
+      _id: appointmentId,
+      patient: req.patient._id,
+    }).populate("patient doctor");
 
     return res.status(200).json({
       success: true,

@@ -1,14 +1,21 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-hot-toast";
 import { assets } from "../assets/assets_frontend/assets.js";
+import Loader from "../components/Loader.jsx";
+import { UserContext } from "../context/UserContext.jsx";
 
 const Appointment = () => {
   const { id } = useParams();
+
+  const { user } = useContext(UserContext);
+
   const [doctor, setDoctor] = useState(null);
 
   const daysOfWeek = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+
+  const [loading, setLoading] = useState(false);
 
   const [similarDoctors, setSimilarDoctors] = useState([]);
   const URI = import.meta.env.VITE_BACKEND_URI;
@@ -16,7 +23,52 @@ const Appointment = () => {
   const [slotIndex, setSlotIndex] = useState(0);
   const [slotTime, setSlotTime] = useState("");
 
+  const [appointmentDate, setAppointmentDate] = useState("");
+
+  const [appointmentTime, setAppointmentTime] = useState("");
+
+  console.log(appointmentDate);
+  console.log(appointmentTime);
+
   const navigate = useNavigate();
+
+  const bookAppointment = async () => {
+    try {
+      setLoading(true);
+      const formattedDate = new Date(appointmentDate)
+        .toISOString()
+        .split("T")[0]; // "2025-07-23";
+
+      if (appointmentDate == "" || appointmentTime === "") {
+        return toast.error(
+          "Appointment details are required to book an appointment"
+        );
+      }
+
+      const { data } = await axios.post(
+        `${URI}/api/appointment/book/${id}`,
+        { slotDate: formattedDate, slotTime: appointmentTime },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        }
+      );
+
+      if (data.success) {
+        toast.success(data.message);
+        navigate("/my-appointments");
+      }
+    } catch (err) {
+      toast.error(err.response.data.message);
+      {
+        !user && navigate("/login");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (!id) return;
@@ -114,12 +166,13 @@ const Appointment = () => {
 
   return (
     <div className="p-4 sm:p-6">
+      {loading && <Loader />}
       {doctor && (
         <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
           {/* Doctor Image */}
           <div className="sm:max-w-72 w-full">
             <img
-              className="w-full h-auto object-cover rounded-xl border border-gray-300"
+              className="w-full h-auto bg-primary object-cover rounded-xl"
               src={doctor.image}
               alt={doctor.name}
             />
@@ -181,12 +234,15 @@ const Appointment = () => {
                 ? "bg-primary text-white shadow-md"
                 : "bg-white text-gray-800 border border-gray-200 hover:bg-blue-50"
             }`}
-                onClick={() => setSlotIndex(index)}
+                onClick={() => {
+                  setSlotIndex(index);
+                  setAppointmentDate(item[index].datetime);
+                }}
               >
                 <p className="capitalize text-xl">
                   {item[0] && daysOfWeek[item[0].datetime.getDay()]}
                 </p>
-                <p className="text-base text-xl">
+                <p className="text-xl">
                   {item[0] && item[0].datetime.getDate()}
                 </p>
               </div>
@@ -199,7 +255,10 @@ const Appointment = () => {
         {doctorSlots.length > 0 &&
           doctorSlots[slotIndex].map((item, index) => (
             <p
-              onClick={() => setSlotTime(item.time)}
+              onClick={() => {
+                setSlotTime(item.time);
+                setAppointmentTime(item.time);
+              }}
               key={index}
               className={`text-sm font-medium flex-shrink-0 px-6 py-3 rounded-[30px] cursor-pointer transition duration-200
           ${
@@ -213,7 +272,10 @@ const Appointment = () => {
           ))}
       </div>
 
-      <button className="bg-primary hover:bg-primary-dark transition-colors duration-300 text-white text-base font-medium px-10 py-3 rounded-full focus:outline-none focus:ring-2 focus:ring-primary-light m-6">
+      <button
+        onClick={bookAppointment}
+        className="bg-primary hover:bg-primary-dark transition-colors duration-300 text-white text-base font-medium px-10 py-3 rounded-full focus:outline-none focus:ring-2 focus:ring-primary-light m-6"
+      >
         Book an Appointment
       </button>
 
