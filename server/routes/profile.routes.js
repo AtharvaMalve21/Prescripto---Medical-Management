@@ -15,7 +15,7 @@ router.get("/patient-profile", isPatientAuthenticated, getPatientProfile);
 
 //PUT - Update Patient Profile
 router.put(
-  "/patient-profile",
+  "/update-profile",
   upload.single("image"),
   isPatientAuthenticated,
   updatePatientProfile

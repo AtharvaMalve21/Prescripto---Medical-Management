@@ -46,9 +46,9 @@ const Doctors = () => {
       </p>
 
       {/* Sidebar and Grid Container */}
-      <div className="flex flex-col sm:flex-row gap-8 mt-6">
+      <div className="flex flex-wrap gap-8 mt-6">
         {/* Sidebar */}
-        <div className="sm:w-64 w-full">
+        <div className="w-full sm:w-48 md:w-56 lg:w-64 shrink-0">
           <ul className="flex sm:flex-col flex-wrap gap-3 sm:gap-4 text-sm text-gray-700">
             {specialities.map((sp) => (
               <li

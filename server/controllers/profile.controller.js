@@ -50,7 +50,7 @@ export const updatePatientProfile = async (req, res) => {
       //update profile
       //find the profile
       const profile = await Profile.findById(patient.additionalDetails);
-      const { gender, phone, address, dob } = req.body;
+      const { name, email, gender, phone, address, dob } = req.body;
       const image = req.file?.path;
       let cloudinaryResponse;
       if (image) {
@@ -66,13 +66,15 @@ export const updatePatientProfile = async (req, res) => {
           message: "Phone number must be of 10 digits.",
         });
       }
-
+      patient.name = name || patient.name;
+      patient.email = email || patient.email;
       profile.gender = gender || profile.gender;
       profile.phone = phone || profile.phone;
       profile.address = address || profile.address;
       profile.dob = dob || profile.dob;
       profile.image = cloudinaryResponse.secure_url || profile.image;
       await profile.save();
+      await patient.save();
 
       return res.status(200).json({
         success: true,
@@ -81,7 +83,7 @@ export const updatePatientProfile = async (req, res) => {
       });
     } else {
       //create a new profile
-      const { gender, phone, address, dob } = req.body;
+      const { name, email, gender, phone, address, dob } = req.body;
       const image = req.file?.path;
       let cloudinaryResponse;
 
@@ -108,6 +110,8 @@ export const updatePatientProfile = async (req, res) => {
       });
 
       patient.additionalDetails = newProfile._id;
+      patient.name = name || patient.name;
+      patient.email = email || patient.email;
       await patient.save();
 
       return res.status(200).json({

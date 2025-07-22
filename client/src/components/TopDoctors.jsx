@@ -34,10 +34,10 @@ const TopDoctors = () => {
         ))}
       </div>
       <button
-        className="bg-blue-50 text-gray-600 px-12 py-3 rounded-full mt-10"
+        className="mt-10 px-8 py-3 rounded-full bg-primary/10 text-primary font-semibold shadow-sm hover:bg-primary/20 hover:text-primary-dark transition duration-200"
         onClick={() => navigate("/doctors")}
       >
-        more
+        View More
       </button>
     </div>
   );

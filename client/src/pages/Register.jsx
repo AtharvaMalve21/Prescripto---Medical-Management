@@ -10,9 +10,11 @@ import {
   EyeIcon,
   EyeSlashIcon,
 } from "@heroicons/react/24/solid";
+import Loader from "../components/Loader.jsx";
 
 const Register = () => {
   const { setUser, setIsLoggedIn } = useContext(UserContext);
+  const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -36,6 +38,7 @@ const Register = () => {
   const registerAccount = async (ev) => {
     ev.preventDefault();
     try {
+      setLoading(true);
       const { data } = await axios.post(
         `${URI}/api/auth/register-patient`,
         formData,
@@ -53,12 +56,15 @@ const Register = () => {
       }
     } catch (err) {
       toast.error(err.response?.data?.message || "Registration failed");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4 py-10">
       <div className="w-full max-w-md bg-white border p-8 rounded-3xl shadow-2xl">
+        {loading && <Loader />}
         <h2 className="text-2xl font-bold text-gray-700 mb-2">
           Create Account
         </h2>

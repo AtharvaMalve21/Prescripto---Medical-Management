@@ -9,9 +9,12 @@ import {
   EyeIcon,
   EyeSlashIcon,
 } from "@heroicons/react/24/solid";
+import Loader from "../components/Loader.jsx";
 
 const Login = () => {
   const { setUser, setIsLoggedIn } = useContext(UserContext);
+
+  const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     email: "",
@@ -34,6 +37,7 @@ const Login = () => {
   const loginAccount = async (ev) => {
     ev.preventDefault();
     try {
+      setLoading(true);
       const { data } = await axios.post(
         `${URI}/api/auth/login-patient`,
         formData,
@@ -51,11 +55,14 @@ const Login = () => {
       }
     } catch (err) {
       toast.error(err.response?.data?.message || "Login failed");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4 py-10">
+      {loading && <Loader />}
       <div className="w-full max-w-md bg-white border p-8 rounded-3xl shadow-2xl">
         <h2 className="text-2xl font-bold text-gray-700 mb-2">Login</h2>
         <p className="text-sm text-gray-600 mb-6">
