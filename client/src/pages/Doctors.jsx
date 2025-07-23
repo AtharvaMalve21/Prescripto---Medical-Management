@@ -55,7 +55,7 @@ const Doctors = () => {
       </p>
 
       <div className="mt-6">
-        {/* Filter toggle button for small screens */}
+        {/* Filter button on small screens */}
         <button
           className={`py-2 px-4 border rounded text-sm sm:hidden ${
             showFilter ? "bg-primary text-white" : ""
@@ -65,11 +65,10 @@ const Doctors = () => {
           Filters
         </button>
 
-        {/* Flex container for sidebar + grid */}
         <div className="flex flex-col sm:flex-row gap-6 mt-6">
           {/* Sidebar */}
           <div
-            className={`w-full sm:w-40 md:w-52 ${
+            className={`w-full sm:w-52 ${
               showFilter ? "block" : "hidden sm:block"
             } flex-shrink-0`}
           >
@@ -91,12 +90,7 @@ const Doctors = () => {
           </div>
 
           {/* Doctors Grid */}
-          <div
-            className="flex-1 grid gap-6"
-            style={{
-              gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-            }}
-          >
+          <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 justify-center">
             {doctors.length === 0 ? (
               <p className="text-center col-span-full text-gray-500">
                 No doctors found.
@@ -106,13 +100,15 @@ const Doctors = () => {
                 <Link
                   to={`/appointment/${doctor._id}`}
                   key={doctor._id}
-                  className="border border-blue-200 rounded-xl overflow-hidden cursor-pointer shadow-sm hover:shadow-md hover:-translate-y-1 transition-transform duration-300 bg-white max-w-sm w-full mx-auto"
+                  className="doctor-card border border-blue-200 rounded-xl overflow-hidden cursor-pointer shadow-sm hover:shadow-md hover:-translate-y-1 transition-transform duration-300 bg-white w-full"
                 >
-                  <img
-                    className="bg-blue-50 w-full h-48 object-cover"
-                    src={doctor.image}
-                    alt={doctor.name}
-                  />
+                  <div className="h-48 bg-blue-50 overflow-hidden">
+                    <img
+                      className="w-full h-full object-cover"
+                      src={doctor.image}
+                      alt={doctor.name}
+                    />
+                  </div>
                   <div className="p-4">
                     {doctor.available && (
                       <div className="flex items-center gap-2 text-sm text-green-500 mb-1">
