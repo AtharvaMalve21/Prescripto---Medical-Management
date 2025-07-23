@@ -8,17 +8,21 @@ export const UserContextProvider = ({ children }) => {
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
+  const [loading, setIsLoading] = useState(false);
+
   const value = {
     user,
     setUser,
     isLoggedIn,
     setIsLoggedIn,
+    loading,
   };
 
   const URI = import.meta.env.VITE_BACKEND_URI;
 
   const fetchUserDetails = async () => {
     try {
+      setIsLoading(true);
       const { data } = await axios.get(URI + "/api/profile/patient-profile", {
         withCredentials: true,
       });
@@ -29,6 +33,8 @@ export const UserContextProvider = ({ children }) => {
       }
     } catch (err) {
       console.log(err.response.data.message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
