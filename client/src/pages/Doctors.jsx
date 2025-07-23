@@ -14,20 +14,27 @@ const Doctors = () => {
 
   const URI = import.meta.env.VITE_BACKEND_URI;
 
-  const fetchDoctorDetails = async (sp = "") => {
+  // Fetch all specialities once
+  const fetchAllSpecialities = async () => {
+    try {
+      const { data } = await axios.get(`${URI}/api/doctor`);
+      const uniqueSpecialities = [
+        ...new Set(data.data.map((doc) => doc.speciality)),
+      ];
+      setSpecialities(uniqueSpecialities);
+    } catch (err) {
+      toast.error("Failed to load specialities");
+    }
+  };
+
+  // Fetch doctors by speciality
+  const fetchDoctors = async (sp) => {
     try {
       const { data } = await axios.get(
         sp ? `${URI}/api/doctor/filter?speciality=${sp}` : `${URI}/api/doctor`
       );
-
       if (data.success) {
         setDoctors(data.data);
-
-        const allSpecialities = await axios.get(`${URI}/api/doctor`);
-        const uniqueSpecialities = [
-          ...new Set(allSpecialities.data.data.map((doc) => doc.speciality)),
-        ];
-        setSpecialities(uniqueSpecialities);
       }
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to fetch doctors");
@@ -35,7 +42,14 @@ const Doctors = () => {
   };
 
   useEffect(() => {
-    fetchDoctorDetails(activeSpeciality);
+    fetchAllSpecialities();
+    fetchDoctors(activeSpeciality);
+  }, []); // Run once on mount
+
+  useEffect(() => {
+    if (activeSpeciality !== speciality) {
+      fetchDoctors(activeSpeciality);
+    }
   }, [activeSpeciality]);
 
   const handleSpecialityClick = (sp) => {
@@ -119,7 +133,9 @@ const Doctors = () => {
                     <p className="text-gray-900 text-lg font-semibold">
                       {doctor.name}
                     </p>
-                    <p className="text-gray-600 text-sm">{doctor.speciality}</p>
+                    <p className="text-gray-600 text-sm">
+                      {doctor.speciality}
+                    </p>
                   </div>
                 </Link>
               ))
