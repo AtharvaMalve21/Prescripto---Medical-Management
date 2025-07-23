@@ -66,12 +66,12 @@ const Doctors = () => {
         </button>
 
         {/* Flex container for sidebar + grid */}
-        <div className="flex gap-6 mt-6 flex-wrap sm:flex-nowrap">
+        <div className="flex flex-col sm:flex-row gap-6 mt-6">
           {/* Sidebar */}
           <div
-            className={`w-full sm:w-56 md:w-64 ${
+            className={`w-full sm:w-40 md:w-52 ${
               showFilter ? "block" : "hidden sm:block"
-            }`}
+            } flex-shrink-0`}
           >
             <ul className="flex flex-wrap sm:flex-col gap-3 sm:gap-4 text-sm text-gray-700">
               {specialities.map((sp) => (
@@ -91,7 +91,12 @@ const Doctors = () => {
           </div>
 
           {/* Doctors Grid */}
-          <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div
+            className="flex-1 grid gap-6"
+            style={{
+              gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+            }}
+          >
             {doctors.length === 0 ? (
               <p className="text-center col-span-full text-gray-500">
                 No doctors found.
@@ -101,7 +106,7 @@ const Doctors = () => {
                 <Link
                   to={`/appointment/${doctor._id}`}
                   key={doctor._id}
-                  className="border border-blue-200 rounded-xl overflow-hidden cursor-pointer shadow-sm hover:shadow-md hover:-translate-y-1 transition-transform duration-300 bg-white w-full max-w-sm mx-auto sm:mx-0"
+                  className="border border-blue-200 rounded-xl overflow-hidden cursor-pointer shadow-sm hover:shadow-md hover:-translate-y-1 transition-transform duration-300 bg-white max-w-sm w-full mx-auto"
                 >
                   <img
                     className="bg-blue-50 w-full h-48 object-cover"
@@ -118,9 +123,7 @@ const Doctors = () => {
                     <p className="text-gray-900 text-lg font-semibold">
                       {doctor.name}
                     </p>
-                    <p className="text-gray-600 text-sm">
-                      {doctor.speciality}
-                    </p>
+                    <p className="text-gray-600 text-sm">{doctor.speciality}</p>
                   </div>
                 </Link>
               ))

@@ -10,3 +10,9 @@
 ::-webkit-scrollbar{
     @apply hidden
 }
+/* global.css or index.css */
+.scroll-snap-smooth {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x mandatory;
+}

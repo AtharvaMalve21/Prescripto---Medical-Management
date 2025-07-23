@@ -9,7 +9,6 @@ const SpecialityMenu = () => {
   const URI = import.meta.env.VITE_BACKEND_URI;
 
   useEffect(() => {
-    // Extract unique specialities from doctors
     const specialitiesSet = new Set(doctors.map((doc) => doc.speciality));
     const mapped = Array.from(specialitiesSet).map((speciality) => {
       const match = specialityData.find(
@@ -17,7 +16,7 @@ const SpecialityMenu = () => {
       );
       return {
         speciality,
-        image: match ? match.image : "https://via.placeholder.com/100", // fallback image
+        image: match ? match.image : "https://via.placeholder.com/100",
       };
     });
     setUniqueSpecialities(mapped);
@@ -34,17 +33,26 @@ const SpecialityMenu = () => {
         your appointment hassle-free.
       </p>
 
-      <div className="flex sm:justify-center gap-4 pt-5 w-full overflow-scroll">
-        {uniqueSpecialities.map(({ speciality, image }, index) => (
-          <Link
-            key={index}
-            to={`/doctors/${speciality}`}
-            className="flex flex-col items-center text-xs cursor-pointer flex-shrink-0 hover:translate-y-[-10px] transition-all duration-500"
-          >
-            <img src={image} alt={speciality} className="w-16 sm:w-24 mb-2" />
-            <p>{speciality}</p>
-          </Link>
-        ))}
+      {/* Scrollable Speciality Cards */}
+      <div className="w-full flex items-center justify-center">
+        <div
+          className="flex gap-6 pt-5 px-4 w-full max-w-3xl overflow-x-auto scrollbar-hide scroll-smooth snap-x snap-mandatory"
+          style={{
+            scrollBehavior: "smooth",
+            WebkitOverflowScrolling: "touch",
+          }}
+        >
+          {uniqueSpecialities.map(({ speciality, image }, index) => (
+            <Link
+              key={index}
+              to={`/doctors/${speciality}`}
+              className="flex flex-col items-center text-xs cursor-pointer flex-shrink-0 snap-start transition-all duration-500 hover:-translate-y-2"
+            >
+              <img src={image} alt={speciality} className="w-16 sm:w-24 mb-2" />
+              <p>{speciality}</p>
+            </Link>
+          ))}
+        </div>
       </div>
     </div>
   );
