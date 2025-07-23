@@ -7,26 +7,19 @@ import Loader from "../components/Loader.jsx";
 import { UserContext } from "../context/UserContext.jsx";
 
 const Appointment = () => {
+  
   const { id } = useParams();
-
   const { user } = useContext(UserContext);
-
   const [doctor, setDoctor] = useState(null);
-
   const daysOfWeek = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
-
   const [loading, setLoading] = useState(false);
-
   const [similarDoctors, setSimilarDoctors] = useState([]);
   const URI = import.meta.env.VITE_BACKEND_URI;
   const [doctorSlots, setDoctorSlots] = useState([]);
   const [slotIndex, setSlotIndex] = useState(0);
   const [slotTime, setSlotTime] = useState("");
-
   const [appointmentDate, setAppointmentDate] = useState("");
-
   const [appointmentTime, setAppointmentTime] = useState("");
-
   console.log(appointmentDate);
   console.log(appointmentTime);
 
@@ -35,23 +28,20 @@ const Appointment = () => {
   const bookAppointment = async () => {
     try {
       setLoading(true);
+
       const formattedDate = new Date(appointmentDate)
         .toISOString()
-        .split("T")[0]; // "2025-07-23";
+        .split("T")[0];
 
-      if (appointmentDate == "" || appointmentTime === "") {
-        return toast.error(
-          "Appointment details are required to book an appointment"
-        );
+      if (!formattedDate || !appointmentTime) {
+        return toast.error("Appointment details are required.");
       }
 
       const { data } = await axios.post(
         `${URI}/api/appointment/book/${id}`,
         { slotDate: formattedDate, slotTime: appointmentTime },
         {
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           withCredentials: true,
         }
       );
@@ -61,12 +51,75 @@ const Appointment = () => {
         navigate("/my-appointments");
       }
     } catch (err) {
-      toast.error(err.response.data.message);
-      {
-        !user && navigate("/login");
-      }
+      toast.error(err?.response?.data?.message || "Booking failed");
+      if (!user) navigate("/login");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchAvailableSlots = async (doctorData) => {
+    const booked = doctorData?.slots_booked || {};
+    const today = new Date();
+    const allSlots = [];
+
+    for (let i = 0; i < 7; i++) {
+      const currentDate = new Date(today);
+      currentDate.setDate(today.getDate() + i);
+      const dateKey = currentDate.toISOString().split("T")[0];
+
+      const endTime = new Date(currentDate);
+      endTime.setHours(21, 0, 0, 0);
+
+      if (i === 0) {
+        const now = new Date();
+        if (now.getHours() >= 21) {
+          allSlots.push([]);
+          continue;
+        }
+
+        const nextSlot = new Date(now);
+        nextSlot.setSeconds(0);
+        nextSlot.setMilliseconds(0);
+        nextSlot.setMinutes(now.getMinutes() < 30 ? 30 : 0);
+        if (now.getMinutes() >= 30) {
+          nextSlot.setHours(now.getHours() + 1);
+        }
+
+        currentDate.setHours(nextSlot.getHours(), nextSlot.getMinutes(), 0, 0);
+      } else {
+        currentDate.setHours(10, 0, 0, 0);
+      }
+
+      const timeSlots = [];
+
+      while (currentDate < endTime) {
+        const formattedTime = currentDate.toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+
+        const isBooked = booked[dateKey]?.includes(formattedTime);
+        if (!isBooked) {
+          timeSlots.push({
+            datetime: new Date(currentDate),
+            time: formattedTime,
+          });
+        }
+
+        currentDate.setMinutes(currentDate.getMinutes() + 30);
+      }
+
+      allSlots.push(timeSlots);
+    }
+
+    setDoctorSlots(allSlots);
+
+    // ✅ Set default date and slotIndex only if first slot exists
+    const firstValidDay = allSlots.findIndex((day) => day.length > 0);
+    if (firstValidDay !== -1) {
+      setSlotIndex(firstValidDay);
+      setAppointmentDate(allSlots[firstValidDay][0].datetime);
     }
   };
 
@@ -75,19 +128,17 @@ const Appointment = () => {
 
     const fetchData = async () => {
       try {
-        // Fetch doctor by ID
         const { data: doctorRes } = await axios.get(`${URI}/api/doctor/${id}`);
         if (doctorRes.success) {
           const fetchedDoctor = doctorRes.data;
           setDoctor(fetchedDoctor);
+          await fetchAvailableSlots(fetchedDoctor);
 
-          // Fetch doctors by same speciality
           const { data: similarRes } = await axios.get(
             `${URI}/api/doctor/filter?speciality=${fetchedDoctor.speciality}`
           );
 
           if (similarRes.success) {
-            // Filter out current doctor from similar list
             const filtered = similarRes.data.filter((doc) => doc._id !== id);
             setSimilarDoctors(filtered);
           }
@@ -100,76 +151,13 @@ const Appointment = () => {
     fetchData();
   }, [id]);
 
-  const fetchAvailableSlots = async () => {
-    setDoctorSlots([]);
-
-    const today = new Date();
-
-    for (let i = 0; i < 7; i++) {
-      const currentDate = new Date(today);
-      currentDate.setDate(today.getDate() + i);
-
-      const endTime = new Date(currentDate);
-      endTime.setHours(21, 0, 0, 0); // 9:00 PM
-
-      // Set start time
-      if (i === 0) {
-        const now = new Date();
-        if (now.getHours() >= 21) {
-          setDoctorSlots((prev) => [...prev, []]); // No slots for today
-          continue;
-        }
-
-        const nextSlot = new Date(now);
-        nextSlot.setSeconds(0);
-        nextSlot.setMilliseconds(0);
-
-        if (now.getMinutes() < 30) {
-          nextSlot.setMinutes(30);
-        } else {
-          nextSlot.setHours(now.getHours() + 1);
-          nextSlot.setMinutes(0);
-        }
-
-        currentDate.setHours(nextSlot.getHours(), nextSlot.getMinutes(), 0, 0);
-      } else {
-        currentDate.setHours(10, 0, 0, 0); // Start from 10:00 AM
-      }
-
-      const timeSlots = [];
-
-      while (currentDate < endTime) {
-        const formattedTime = currentDate.toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        });
-
-        timeSlots.push({
-          datetime: new Date(currentDate),
-          time: formattedTime,
-        });
-
-        currentDate.setMinutes(currentDate.getMinutes() + 30);
-      }
-
-      setDoctorSlots((prev) => [...prev, timeSlots]);
-    }
-  };
-
-  useEffect(() => {
-    fetchAvailableSlots();
-  }, [doctor]);
-
-  useEffect(() => {
-    console.log(doctorSlots);
-  }, [doctorSlots]);
-
   return (
     <div className="p-4 sm:p-6">
       {loading && <Loader />}
+
+      {/* Doctor Info */}
       {doctor && (
         <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
-          {/* Doctor Image */}
           <div className="sm:max-w-72 w-full">
             <img
               className="w-full h-auto bg-primary object-cover rounded-xl"
@@ -177,8 +165,6 @@ const Appointment = () => {
               alt={doctor.name}
             />
           </div>
-
-          {/* Doctor Info Card */}
           <div className="flex-1 border border-gray-300 rounded-xl p-6 bg-white shadow-sm mt-4 sm:mt-0">
             <h2 className="flex items-center gap-2 text-2xl font-semibold text-gray-900">
               {doctor.name}
@@ -188,7 +174,6 @@ const Appointment = () => {
                 alt="verified"
               />
             </h2>
-
             <div className="flex flex-wrap items-center gap-2 text-sm text-gray-600 mt-2">
               <span>
                 {doctor.degree} - {doctor.speciality}
@@ -197,7 +182,6 @@ const Appointment = () => {
                 {doctor.experience} {doctor.experience === 1 ? "year" : "years"}
               </span>
             </div>
-
             <div className="mt-4">
               <p className="flex items-center gap-1 text-sm font-medium text-gray-900">
                 About{" "}
@@ -207,7 +191,6 @@ const Appointment = () => {
                 {doctor.about}
               </p>
             </div>
-
             <p className="text-gray-600 font-medium mt-4">
               Appointment Fee:{" "}
               <span className="text-gray-800 font-semibold">
@@ -219,7 +202,6 @@ const Appointment = () => {
       )}
 
       {/* Booking Slots */}
-
       <div className="mt-8 font-medium text-gray-700">
         <p className="text-lg mb-3">Booking Slots</p>
 
@@ -229,14 +211,16 @@ const Appointment = () => {
               <div
                 key={index}
                 className={`min-w-[100px] min-h-[150px] px-5 py-6 rounded-full cursor-pointer flex flex-col items-center justify-center transition duration-200
-            ${
-              slotIndex === index
-                ? "bg-primary text-white shadow-md"
-                : "bg-white text-gray-800 border border-gray-200 hover:bg-blue-50"
-            }`}
+                ${
+                  slotIndex === index
+                    ? "bg-primary text-white shadow-md"
+                    : "bg-white text-gray-800 border border-gray-200 hover:bg-blue-50"
+                }`}
                 onClick={() => {
                   setSlotIndex(index);
-                  setAppointmentDate(item[index].datetime);
+                  if (item.length > 0) {
+                    setAppointmentDate(item[0].datetime);
+                  }
                 }}
               >
                 <p className="capitalize text-xl">
@@ -261,13 +245,13 @@ const Appointment = () => {
               }}
               key={index}
               className={`text-sm font-medium flex-shrink-0 px-6 py-3 rounded-[30px] cursor-pointer transition duration-200
-          ${
-            item.time === slotTime
-              ? "bg-primary text-white shadow-md"
-              : "border border-gray-300 text-gray-400 hover:bg-gray-100"
-          }`}
+              ${
+                item.time === slotTime
+                  ? "bg-primary text-white shadow-md"
+                  : "border border-gray-300 text-gray-400 hover:bg-gray-100"
+              }`}
             >
-              {item.time && item.time.toLowerCase()}
+              {item.time.toLowerCase()}
             </p>
           ))}
       </div>
@@ -279,7 +263,7 @@ const Appointment = () => {
         Book an Appointment
       </button>
 
-      {/* Similar Doctors  */}
+      {/* Similar Doctors */}
       <div className="flex flex-col items-center gap-4 my-16 to-gray-900 md:mx-10">
         <h1 className="text-3xl font-medium">Top Doctors to Book</h1>
         <p className="sm:w-1/3 text-center text-sm">
@@ -299,7 +283,7 @@ const Appointment = () => {
               <div className="p-4">
                 {doctor.available && (
                   <div className="flex items-center gap-2 text-sm text-center text-green-500">
-                    <p className="w-2 h-2 bg-green-500 rounded-full"></p>{" "}
+                    <p className="w-2 h-2 bg-green-500 rounded-full"></p>
                     <p>Available</p>
                   </div>
                 )}

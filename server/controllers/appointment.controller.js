@@ -33,18 +33,18 @@ export const bookAppointment = async (req, res) => {
       });
     }
 
-    const existingAppointment = await Appointment.findOne({
-      doctor: doctorId,
-      patient: patientId,
-      isCompleted: false,
-    });
+    // const existingAppointment = await Appointment.findOne({
+    //   doctor: doctorId,
+    //   patient: patientId,
+    //   isCompleted: false,
+    // });
 
-    if (existingAppointment) {
-      return res.status(400).json({
-        success: false,
-        message: "You already have an ongoing appointment with this doctor.",
-      });
-    }
+    // if (existingAppointment) {
+    //   return res.status(400).json({
+    //     success: false,
+    //     message: "You already have an ongoing appointment with this doctor.",
+    //   });
+    // }
 
     const updateResult = await Doctor.findOneAndUpdate(
       {
@@ -148,53 +148,59 @@ export const viewAppointment = async (req, res) => {
 
 export const cancelAppointment = async (req, res) => {
   try {
-    const patientId = req.patient._id;
+    //authenticate patient
+    const patient = await User.findById(req.patient._id);
+    if (!patient) {
+      return res.status(400).json({
+        success: false,
+        message: "Patient is not authenticated. Login to cancel the booking.",
+      });
+    }
+
+    //find the appointment
     const { id: appointmentId } = req.params;
     const appointment = await Appointment.findById(appointmentId);
     if (!appointment) {
-      return res.status(404).json({
+      return res.status(400).json({
         success: false,
-        message: "Appointment not found.",
+        message: "Appointment not found with the provided id.",
       });
     }
 
-    if (appointment.patient.toString() !== patientId.toString()) {
+    //check if the user is authorized to cancel appointment
+    if (appointment.patient.toString() !== patient._id.toString()) {
       return res.status(403).json({
         success: false,
-        message: "Unauthorized to cancel this appointment.",
+        message: "Not authorized to cancel the appointment.",
       });
     }
 
+    //update the appointment status
+    await Appointment.findByIdAndUpdate(appointmentId, {
+      status: "cancelled",
+    });
+
+    //update the doctor model
     const doctor = await Doctor.findById(appointment.doctor);
-    if (!doctor) {
-      return res.status(404).json({
-        success: false,
-        message: "Associated doctor not found.",
-      });
-    }
-    const { slotDate, slotTime } = appointment;
-    if (doctor.slots_booked[slotDate]) {
-      doctor.slots_booked[slotDate] = doctor.slots_booked[slotDate].filter(
-        (time) => time.toString() !== slotTime
-      );
-      if (doctor.slots_booked[slotDate].length === 0) {
-        delete doctor.slots_booked[slotDate];
-      }
 
-      await doctor.save();
-    }
+    let slots_booked = doctor.slots_booked;
 
-    await appointment.deleteOne();
+    slots_booked[appointment.slotDate] = slots_booked[
+      appointment.slotDate
+    ].filter((e) => e !== appointment.slotTime);
+
+    await Doctor.findByIdAndUpdate(doctor._id, {
+      slots_booked: slots_booked,
+    });
 
     return res.status(200).json({
       success: true,
-      message: "Appointment canceled successfully.",
+      message: "Appointment cancelled successfully.",
     });
   } catch (err) {
-    console.error(err);
-    return res.status(500).json({
+    res.status(500).json({
       success: false,
-      message: "Something went wrong while canceling the appointment.",
+      message: err.message,
     });
   }
 };

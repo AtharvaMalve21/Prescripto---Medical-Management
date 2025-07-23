@@ -30,10 +30,7 @@ const App = () => {
         <Route path="/my-profile" element={<MyProfile />} />
         <Route path="/doctors" element={<Doctors />} />
         <Route path="/doctors/:speciality" element={<Doctors />} />
-        <Route
-          path="/my-appointments"
-          element={user ? <MyAppointments /> : <Navigate to="/login" />}
-        />
+        <Route path="/my-appointments" element={<MyAppointments />} />
         <Route path="/appointment/:id" element={<Appointment />} />
       </Routes>
       <Footer />
