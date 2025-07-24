@@ -11,6 +11,7 @@ import profileRoutes from "./routes/profile.routes.js";
 import adminRoutes from "./routes/admin.routes.js";
 import doctorRoutes from "./routes/doctor.routes.js";
 import appointmentRoutes from "./routes/appointment.routes.js";
+import paymentRoutes from "./routes/payment.routes.js";
 
 dotenv.config();
 const app = express();
@@ -40,6 +41,7 @@ app.use("/api/profile", profileRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/doctor", doctorRoutes);
 app.use("/api/appointment", appointmentRoutes);
+app.use("/api/payment", paymentRoutes);
 
 app.get("/", (req, res) => {
   res.json({ message: "Prescripto Application." });
