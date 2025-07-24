@@ -114,9 +114,9 @@ const MyAppointments = () => {
                   </button>
                 )}
                 {appointment?.status === "cancelled" && (
-                  <div className="w-full sm:w-auto py-2 px-4 text-center border border-red-500 text-red-500 rounded-md text-sm">
+                  <button disabled className="w-full sm:w-auto py-2 px-4 text-center cursor-not-allowed border border-red-500 text-red-500 rounded-md text-sm">
                     Appointment Cancelled
-                  </div>
+                  </button>
                 )}
               </div>
             </div>

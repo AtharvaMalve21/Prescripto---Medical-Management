@@ -27,14 +27,15 @@ const MyProfile = () => {
 
   useEffect(() => {
     if (user) {
+      const additional = user.additionalDetails || {};
       setUserData({
-        name: user?.name || "",
-        email: user?.email || "",
-        gender: user?.additionalDetails?.gender || "",
-        phone: user?.additionalDetails?.phone || "",
-        address: user?.additionalDetails?.address || "",
-        dob: user?.additionalDetails?.dob || "",
-        image: user?.additionalDetails?.image || "",
+        name: user.name || "",
+        email: user.email || "",
+        gender: additional.gender || "",
+        phone: additional.phone || "",
+        address: additional.address || "",
+        dob: additional.dob || "",
+        image: additional.image || "",
       });
     }
   }, [user]);
