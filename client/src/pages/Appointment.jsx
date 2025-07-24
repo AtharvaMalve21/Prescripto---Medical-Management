@@ -7,7 +7,6 @@ import Loader from "../components/Loader.jsx";
 import { UserContext } from "../context/UserContext.jsx";
 
 const Appointment = () => {
-  
   const { id } = useParams();
   const { user } = useContext(UserContext);
   const [doctor, setDoctor] = useState(null);
@@ -235,7 +234,7 @@ const Appointment = () => {
       </div>
 
       {/* Slot Times */}
-      <div className="flex items-center gap-3 overflow-x-auto mt-4 pb-1">
+      <div className="flex flex-wrap sm:flex-nowrap gap-3 mt-4 pb-1 max-w-full overflow-x-auto">
         {doctorSlots.length > 0 &&
           doctorSlots[slotIndex].map((item, index) => (
             <p
@@ -244,12 +243,12 @@ const Appointment = () => {
                 setAppointmentTime(item.time);
               }}
               key={index}
-              className={`text-sm font-medium flex-shrink-0 px-6 py-3 rounded-[30px] cursor-pointer transition duration-200
-              ${
-                item.time === slotTime
-                  ? "bg-primary text-white shadow-md"
-                  : "border border-gray-300 text-gray-400 hover:bg-gray-100"
-              }`}
+              className={`text-sm font-medium flex-shrink-0 px-6 py-3 rounded-[30px] cursor-pointer whitespace-nowrap transition duration-200
+        ${
+          item.time === slotTime
+            ? "bg-primary text-white shadow-md"
+            : "border border-gray-300 text-gray-400 hover:bg-gray-100"
+        }`}
             >
               {item.time.toLowerCase()}
             </p>
