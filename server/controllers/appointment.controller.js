@@ -64,13 +64,14 @@ export const bookAppointment = async (req, res) => {
       doctor: doctorId,
       isComplete: false,
       status: { $ne: "cancelled" },
-    });
+      paymentStatus: { $ne: "paid" },
+    }).sort({ createdAt: -1 });
 
     if (existingAppointment) {
       return res.status(400).json({
         success: false,
         message:
-          "You already have an active appointment with this doctor. Please complete or cancel it before booking a new one.",
+          "You already have an ongoing appointment with this doctor that hasn't been completed or paid for. Please complete the existing appointment or wait for it to be processed before booking a new one.",
       });
     }
 

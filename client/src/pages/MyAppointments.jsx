@@ -160,6 +160,9 @@ const MyAppointments = () => {
                 </div>
 
                 <div className="flex-1 text-sm text-gray-700 space-y-2">
+                  <p className="text-xs text-gray-400">
+                    Appointment ID: {appointment?._id}
+                  </p>
                   <p className="text-base font-semibold">
                     {appointment?.doctor?.name}
                   </p>
@@ -170,6 +173,7 @@ const MyAppointments = () => {
                     <span className="font-semibold">Address:</span> <br />
                     {appointment?.doctor?.address}
                   </p>
+
                   <p>
                     <span className="font-semibold">Date & Time:</span>{" "}
                     {new Date(appointment?.slotDate).toLocaleDateString(
@@ -181,6 +185,12 @@ const MyAppointments = () => {
                       }
                     )}{" "}
                     | {appointment?.slotTime}
+                  </p>
+                  <p>
+                    <span className="font-semibold">Consultation Fee:</span>{" "}
+                    <span className="text-primary font-semibold">
+                      ₹ {appointment?.amount}
+                    </span>
                   </p>
                 </div>
               </div>

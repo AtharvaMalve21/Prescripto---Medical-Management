@@ -325,7 +325,7 @@ export const appointmentPaymentEmailTemplate = (
 
       <h3 style="margin-top: 30px;">💳 Payment Details</h3>
       <ul style="line-height: 1.6;">
-        <li><strong>Amount Paid:</strong> $${amount}</li>
+        <li><strong>Amount Paid:</strong> ₹${amount}</li>
         <li><strong>Transaction ID:</strong> ${transactionId}</li>
         <li><strong>Payment Method:</strong>Razorpay</li>
       </ul>
