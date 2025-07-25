@@ -118,7 +118,7 @@ const MyAppointments = () => {
   return (
     <div className="p-4 sm:p-6">
       {loading && <Loader />}
-      
+
       {paymentSuccess && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
           <div className="bg-white w-[90%] sm:w-[400px] rounded-xl shadow-lg p-6 text-center space-y-4">

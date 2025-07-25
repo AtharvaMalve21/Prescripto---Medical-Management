@@ -45,34 +45,37 @@ export const updatePatientProfile = async (req, res) => {
       });
     }
 
-    //check if the profile already exists
-    if (patient.additionalDetails) {
-      //update profile
-      //find the profile
-      const profile = await Profile.findById(patient.additionalDetails);
-      const { name, email, gender, phone, address, dob } = req.body;
-      const image = req.file?.path;
-      let cloudinaryResponse;
-      if (image) {
-        cloudinaryResponse = await cloudinary.uploader.upload(image, {
-          folder: "prescripto/patients",
-        });
-        fs.unlinkSync(image);
-      }
+    const { name, email, gender, phone, address, dob } = req.body;
+    const image = req.file?.path;
+    let cloudinaryResponse;
 
-      if (phone && phone.length !== 10) {
-        return res.status(400).json({
-          success: false,
-          message: "Phone number must be of 10 digits.",
-        });
-      }
+    if (image) {
+      cloudinaryResponse = await cloudinary.uploader.upload(image, {
+        folder: "prescripto/patients",
+      });
+      if (fs.existsSync(image)) fs.unlinkSync(image);
+    }
+
+    if (phone && phone.length !== 10) {
+      return res.status(400).json({
+        success: false,
+        message: "Phone number must be of 10 digits.",
+      });
+    }
+
+    if (patient.additionalDetails) {
+      // Update existing profile
+      const profile = await Profile.findById(patient.additionalDetails);
+
       patient.name = name || patient.name;
       patient.email = email || patient.email;
+
       profile.gender = gender || profile.gender;
       profile.phone = phone || profile.phone;
       profile.address = address || profile.address;
       profile.dob = dob || profile.dob;
-      profile.image = cloudinaryResponse.secure_url || profile.image;
+      profile.image = cloudinaryResponse?.secure_url || profile.image;
+
       await profile.save();
       await patient.save();
 
@@ -82,36 +85,19 @@ export const updatePatientProfile = async (req, res) => {
         message: "Profile updated successfully.",
       });
     } else {
-      //create a new profile
-      const { name, email, gender, phone, address, dob } = req.body;
-      const image = req.file?.path;
-      let cloudinaryResponse;
-
-      if (image) {
-        cloudinaryResponse = await cloudinary.uploader.upload(image, {
-          folder: "prescripto/patients",
-        });
-        fs.unlinkSync(image);
-      }
-
-      if (phone && phone.length !== 10) {
-        return res.status(400).json({
-          success: false,
-          message: "Phone number must be of 10 digits.",
-        });
-      }
-
+      // Create new profile
       const newProfile = await Profile.create({
-        gender: gender,
-        phone: phone,
-        address: address,
-        dob: dob,
-        image: cloudinaryResponse.secure_url,
+        gender,
+        phone,
+        address,
+        dob,
+        image: cloudinaryResponse?.secure_url || "", // fallback in case upload fails
       });
 
-      patient.additionalDetails = newProfile._id;
       patient.name = name || patient.name;
       patient.email = email || patient.email;
+      patient.additionalDetails = newProfile._id;
+
       await patient.save();
 
       return res.status(200).json({
@@ -121,7 +107,7 @@ export const updatePatientProfile = async (req, res) => {
       });
     }
   } catch (err) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: err.message,
     });

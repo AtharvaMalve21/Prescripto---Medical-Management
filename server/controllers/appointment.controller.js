@@ -2,7 +2,10 @@ import User from "../models/user.model.js";
 import Doctor from "../models/doctor.model.js";
 import Appointment from "../models/appointment.model.js";
 import { transporter } from "../config/nodemailer.config.js";
-import { appointmentBookedEmailTemplate } from "../utils/emailTemplate.js";
+import {
+  appointmentBookedEmailTemplate,
+  appointmentCancelledEmailTemplate,
+} from "../utils/emailTemplate.js";
 
 export const bookAppointment = async (req, res) => {
   try {
@@ -33,29 +36,18 @@ export const bookAppointment = async (req, res) => {
       });
     }
 
-    // const existingAppointment = await Appointment.findOne({
-    //   doctor: doctorId,
-    //   patient: patientId,
-    //   isCompleted: false,
-    // });
-
-    // if (existingAppointment) {
-    //   return res.status(400).json({
-    //     success: false,
-    //     message: "You already have an ongoing appointment with this doctor.",
-    //   });
-    // }
+    const formattedSlotTime = slotTime.trim();
 
     const updateResult = await Doctor.findOneAndUpdate(
       {
         _id: doctorId,
         $or: [
-          { [`slots_booked.${slotDate}`]: { $ne: slotTime } },
+          { [`slots_booked.${slotDate}`]: { $ne: formattedSlotTime } },
           { [`slots_booked.${slotDate}`]: { $exists: false } },
         ],
       },
       {
-        $push: { [`slots_booked.${slotDate}`]: slotTime },
+        $push: { [`slots_booked.${slotDate}`]: formattedSlotTime },
       },
       { new: true }
     );
@@ -67,12 +59,27 @@ export const bookAppointment = async (req, res) => {
       });
     }
 
+    const existingAppointment = await Appointment.findOne({
+      patient: patientId,
+      doctor: doctorId,
+      isComplete: false,
+      status: { $ne: "cancelled" },
+    });
+
+    if (existingAppointment) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "You already have an active appointment with this doctor. Please complete or cancel it before booking a new one.",
+      });
+    }
+
     const newAppointment = await Appointment.create({
       patient: patientId,
       doctor: doctorId,
       amount: doctor.fees,
       slotDate,
-      slotTime,
+      slotTime: formattedSlotTime,
       date: Date.now(),
     });
 
@@ -84,7 +91,7 @@ export const bookAppointment = async (req, res) => {
         patient.name,
         doctor.name,
         slotDate,
-        slotTime,
+        formattedSlotTime,
         doctor.address
       ),
     });
@@ -191,6 +198,19 @@ export const cancelAppointment = async (req, res) => {
 
     await Doctor.findByIdAndUpdate(doctor._id, {
       slots_booked: slots_booked,
+    });
+
+    //send email
+    await transporter.sendMail({
+      from: process.env.MAIL_USER,
+      to: patient.email,
+      subject: `Your Appointment with Dr. ${doctor.name} Has Been Cancelled`,
+      html: appointmentCancelledEmailTemplate(
+        patient.name,
+        doctor.name,
+        appointment.slotDate,
+        appointment.slotTime
+      ),
     });
 
     return res.status(200).json({

@@ -47,6 +47,16 @@ const Appointment = () => {
 
       if (data.success) {
         toast.success(data.message);
+
+        // Refetch doctor and update slot list immediately
+        const { data: updatedDoctorRes } = await axios.get(
+          `${URI}/api/doctor/${id}`
+        );
+        if (updatedDoctorRes.success) {
+          setDoctor(updatedDoctorRes.data);
+          await fetchAvailableSlots(updatedDoctorRes.data);
+        }
+
         navigate("/my-appointments");
       }
     } catch (err) {
@@ -96,6 +106,7 @@ const Appointment = () => {
         const formattedTime = currentDate.toLocaleTimeString([], {
           hour: "2-digit",
           minute: "2-digit",
+          hour12: true,
         });
 
         const isBooked = booked[dateKey]?.includes(formattedTime);
@@ -210,11 +221,11 @@ const Appointment = () => {
               <div
                 key={index}
                 className={`min-w-[100px] min-h-[150px] px-5 py-6 rounded-full cursor-pointer flex flex-col items-center justify-center transition duration-200
-                ${
-                  slotIndex === index
-                    ? "bg-primary text-white shadow-md"
-                    : "bg-white text-gray-800 border border-gray-200 hover:bg-blue-50"
-                }`}
+                  ${
+                    slotIndex === index
+                      ? "bg-primary text-white shadow-md"
+                      : "bg-white text-gray-800 border border-gray-200 hover:bg-blue-50"
+                  }`}
                 onClick={() => {
                   setSlotIndex(index);
                   if (item.length > 0) {
@@ -244,11 +255,11 @@ const Appointment = () => {
               }}
               key={index}
               className={`text-sm font-medium flex-shrink-0 px-6 py-3 rounded-[30px] cursor-pointer whitespace-nowrap transition duration-200
-        ${
-          item.time === slotTime
-            ? "bg-primary text-white shadow-md"
-            : "border border-gray-300 text-gray-400 hover:bg-gray-100"
-        }`}
+          ${
+            item.time === slotTime
+              ? "bg-primary text-white shadow-md"
+              : "border border-gray-300 text-gray-400 hover:bg-gray-100"
+          }`}
             >
               {item.time.toLowerCase()}
             </p>

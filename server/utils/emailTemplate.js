@@ -296,3 +296,51 @@ export const appointmentCancelledEmailTemplate = (
 </html>
 `;
 };
+
+export const appointmentPaymentEmailTemplate = (
+  patientName,
+  doctorName,
+  slotDate,
+  slotTime,
+  doctorAddress,
+  amount,
+  transactionId
+) => {
+  return `
+    <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
+      <h2 style="color: #2d89ef;">Payment Confirmation - Appointment Booked</h2>
+      
+      <p>Dear <strong>${patientName}</strong>,</p>
+
+      <p>Thank you for your payment. Your appointment with <strong>Dr. ${doctorName}</strong> has been confirmed.</p>
+      
+      <h3 style="margin-top: 30px;">🩺 Appointment Details</h3>
+      <ul style="line-height: 1.6;">
+        <li><strong>Date:</strong> ${new Date(
+          slotDate
+        ).toLocaleDateString()}</li>
+        <li><strong>Time:</strong> ${slotTime}</li>
+        <li><strong>Location:</strong> ${doctorAddress}</li>
+      </ul>
+
+      <h3 style="margin-top: 30px;">💳 Payment Details</h3>
+      <ul style="line-height: 1.6;">
+        <li><strong>Amount Paid:</strong> $${amount}</li>
+        <li><strong>Transaction ID:</strong> ${transactionId}</li>
+        <li><strong>Payment Method:</strong>Razorpay</li>
+      </ul>
+
+      <p style="margin-top: 30px;">
+        Please make sure to arrive 10 minutes before your scheduled time. 
+        If you have any questions or need to reschedule, feel free to contact us.
+      </p>
+
+      <p style="margin-top: 30px;">Wishing you good health,<br /><strong>Prescripto Team</strong></p>
+
+      <hr style="margin-top: 40px;" />
+      <p style="font-size: 12px; color: #888;">
+        This is a confirmation of your payment and appointment. If you did not make this booking, please contact support immediately.
+      </p>
+    </div>
+  `;
+};

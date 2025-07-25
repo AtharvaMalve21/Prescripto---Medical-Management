@@ -1,5 +1,9 @@
 import { razorpay } from "../utils/razorpay.utils.js";
 import Appointment from "../models/appointment.model.js";
+import { transporter } from "../config/nodemailer.config.js";
+import Doctor from "../models/doctor.model.js";
+import User from "../models/user.model.js";
+import { appointmentPaymentEmailTemplate } from "../utils/emailTemplate.js";
 
 export const paymentRazorPay = async (req, res) => {
   try {
@@ -64,7 +68,6 @@ export const verifyPayment = async (req, res) => {
       });
     }
 
-    // Fetch the order details from Razorpay using the order ID
     const rzOrder = await razorpay.orders.fetch(razorpay_order_id);
 
     if (!rzOrder) {
@@ -85,6 +88,10 @@ export const verifyPayment = async (req, res) => {
 
     const appointment = await Appointment.findById(appointmentId);
 
+    const patient = await User.findById(appointment.patient);
+
+    const doctor = await Doctor.findById(appointment.doctor);
+
     if (!appointment) {
       return res.status(404).json({
         success: false,
@@ -95,6 +102,21 @@ export const verifyPayment = async (req, res) => {
     if (paymentStatus === "paid") {
       appointment.paymentStatus = "paid";
       await appointment.save();
+
+      await transporter.sendMail({
+        from: process.env.MAIL_USER,
+        to: patient.email,
+        subject: `Payment Confirmation - Appointment with Dr. ${doctor.name}`,
+        html: appointmentPaymentEmailTemplate(
+          patient.name,
+          doctor.name,
+          appointment.slotDate,
+          appointment.slotTime,
+          doctor.address,
+          appointment.amount,
+          razorpay_order_id
+        ),
+      });
 
       return res.status(200).json({
         success: true,
