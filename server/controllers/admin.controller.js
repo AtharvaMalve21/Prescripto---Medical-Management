@@ -2,13 +2,12 @@ import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 dotenv.config();
 import { v2 as cloudinary } from "cloudinary";
-import bcrypt, { hash } from "bcrypt";
+import bcrypt from "bcrypt";
 import Doctor from "../models/doctor.model.js";
 import fs from "fs";
 
 export const adminLogin = async (req, res) => {
   try {
-    
     //fetch admin details
     const { email, password } = req.body;
 
@@ -185,6 +184,50 @@ export const addDoctor = async (req, res) => {
       success: true,
       data: newDoctor,
       message: "Doctor profile created successfully.",
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
+export const getAllDoctors = async (req, res) => {
+  try {
+    const doctors = await Doctor.find({}).sort({ createdAt: -1 });
+    return res.status(200).json({
+      success: true,
+      data: doctors,
+      message: "Doctors data fetched.",
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
+export const toggleDoctorAvailablity = async (req, res) => {
+  try {
+    const { id: doctorId } = req.params;
+
+    const doctor = await Doctor.findById(doctorId);
+    if (!doctor) {
+      return res.status(400).json({
+        success: false,
+        message: "No Doctor found.",
+      });
+    }
+
+    doctor.available = !doctor.available;
+
+    await doctor.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Doctor status changed",
     });
   } catch (err) {
     res.status(500).json({

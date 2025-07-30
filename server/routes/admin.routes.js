@@ -4,6 +4,8 @@ import {
   adminLogout,
   adminProfile,
   addDoctor,
+  getAllDoctors,
+  toggleDoctorAvailablity,
 } from "../controllers/admin.controller.js";
 import { isAdminAuthenticated } from "../middleware/auth.middleware.js";
 import { upload } from "../middleware/multer.middleware.js";
@@ -26,5 +28,9 @@ router.post(
   isAdminAuthenticated,
   addDoctor
 );
+
+router.get("/doctors", isAdminAuthenticated, getAllDoctors);
+
+router.get("/doctor/:id", isAdminAuthenticated, toggleDoctorAvailablity);
 
 export default router;

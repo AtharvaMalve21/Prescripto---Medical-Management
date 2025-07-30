@@ -189,7 +189,7 @@ const Appointment = () => {
                 {doctor.degree} - {doctor.speciality}
               </span>
               <span className="px-2 py-0.5 border rounded-full text-xs">
-                {doctor.experience} {doctor.experience === 1 ? "year" : "years"}
+                {doctor.experience}
               </span>
             </div>
             <div className="mt-4">

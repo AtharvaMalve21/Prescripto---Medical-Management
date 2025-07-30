@@ -1,6 +1,6 @@
 import { createContext, useEffect, useState } from "react";
 import axios from "axios";
-import { Loader } from "lucide-react";
+import Loader from "../components/Loader.jsx";
 
 export const AdminContext = createContext({});
 

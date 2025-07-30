@@ -5,15 +5,18 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import { LogOut } from "lucide-react";
+import Loader from "../Loader.jsx";
 
 const DoctorNavbar = () => {
   const [showDropdown, setShowDropdown] = useState(false);
   const { doctor, setDoctor, setIsDoctorLoggedIn } = useContext(DoctorContext);
   const navigate = useNavigate();
   const URI = import.meta.env.VITE_BACKEND_URI;
+  const [loading, setLoading] = useState(false);
 
   const logoutHandler = async () => {
     try {
+      setLoading(true);
       const { data } = await axios.get(URI + "/api/auth/logout-doctor", {
         withCredentials: true,
       });
@@ -26,11 +29,14 @@ const DoctorNavbar = () => {
     } catch (err) {
       console.log(err.message);
       toast.error(err.response?.data.message);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="flex justify-between items-center px-4 sm:px-10 py-3 border-b bg-white relative">
+      {loading && <Loader />}
       {/* Left: Logo + Panel Label */}
       <div className="flex items-center gap-2 text-sm font-semibold text-gray-800">
         <img

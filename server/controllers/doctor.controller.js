@@ -3,7 +3,9 @@ import Appointment from "../models/appointment.model.js";
 
 export const getAllDoctors = async (req, res) => {
   try {
-    const doctors = await Doctor.find({}).sort({ createdAt: -1 });
+    const doctors = await Doctor.find({ available: true }).sort({
+      createdAt: -1,
+    });
 
     return res.status(200).json({
       success: true,
@@ -28,7 +30,10 @@ export const filterDoctorBySpeciality = async (req, res) => {
       });
     }
 
-    const filteredDoctors = await Doctor.find({ speciality: speciality });
+    const filteredDoctors = await Doctor.find({
+      speciality: speciality,
+      available: true,
+    });
 
     return res.status(200).json({
       success: true,
@@ -68,7 +73,6 @@ export const viewDoctor = async (req, res) => {
 
 export const approveAppointment = async (req, res) => {
   try {
-    
     //find the appointment
     const { id: appointmentId } = req.params;
 

@@ -5,15 +5,19 @@ import { assets } from "../../assets/assets_admin/assets.js";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import { AdminContext } from "../../context/AdminContext.jsx";
+import Loader from "../Loader.jsx";
+import { useState } from "react";
 
 const AdminNavbar = () => {
   const { setAdmin, setIsAdminLoggedIn } = useContext(AdminContext);
+  const [loading, setLoading] = useState(false);
 
   const URI = import.meta.env.VITE_BACKEND_URI;
   const navigate = useNavigate();
 
   const logoutHandler = async () => {
     try {
+      setLoading(true);
       const { data } = await axios.get(URI + "/api/admin/logout", {
         withCredentials: true,
       });
@@ -25,11 +29,14 @@ const AdminNavbar = () => {
       }
     } catch (err) {
       toast.error(err.response?.data.message || "Logout failed");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="flex justify-between items-center px-4 sm:px-10 py-3 border-b border-gray-200 bg-white shadow-md z-50">
+      {loading && <Loader />}
       {/* Logo and Label */}
       <div className="flex items-center gap-3">
         <img

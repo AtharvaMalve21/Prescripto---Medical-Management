@@ -3,11 +3,11 @@ import { NavLink } from "react-router-dom";
 import { assets } from "../../assets/assets_admin/assets";
 
 const navItemClass = ({ isActive }) =>
-  `flex items-center gap-3 py-3.5 px-4 md:px-6 relative group transition-all
+  `flex items-center gap-3 py-3.5 px-4 md:px-6 relative group transition-all duration-200 rounded-md
    ${
      isActive
-       ? "text-primary font-medium bg-[#F2F3FF] before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1 before:bg-primary"
-       : "hover:bg-gray-50"
+       ? "text-primary font-medium bg-primary/10 before:absolute before:right-0 before:top-0 before:bottom-0 before:w-1 before:bg-primary"
+       : "text-gray-700 hover:bg-gray-100/90 hover:text-primary"
    }`;
 
 const AdminSidebar = () => {
@@ -20,7 +20,11 @@ const AdminSidebar = () => {
         </NavLink>
 
         <NavLink to="/all-appointments" className={navItemClass}>
-          <img src={assets.appointment_icon} alt="appointments" className="w-5" />
+          <img
+            src={assets.appointment_icon}
+            alt="appointments"
+            className="w-5"
+          />
           <p>Appointments</p>
         </NavLink>
 

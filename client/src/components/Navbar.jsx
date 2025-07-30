@@ -34,12 +34,22 @@ const Navbar = () => {
       {loading && <Loader />}
 
       {/* Logo */}
-      <img
-        onClick={() => navigate("/")}
-        src={assets.logo}
-        alt="Logo"
-        className="w-40 cursor-pointer"
-      />
+      <div className="flex items-center gap-3 text-primary">
+        <img
+          onClick={() => navigate("/")}
+          src={assets.logo}
+          alt="Logo"
+          className="w-40 cursor-pointer"
+        />
+        {!user && (
+          <Link
+            to={import.meta.env.VITE_ADMIN_URI}
+            className=" mt-2 hidden sm:inline-block text-xs px-3 py-1 bg-primary/10 text-primary border border-primary rounded-full shadow-sm cursor-pointer"
+          >
+            Admin Panel
+          </Link>
+        )}
+      </div>
 
       {/* Desktop Nav Links */}
       <ul className="hidden md:flex items-center gap-6 font-semibold text-gray-700">
