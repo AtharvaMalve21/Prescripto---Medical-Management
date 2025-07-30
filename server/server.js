@@ -23,7 +23,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/uploads", express.static("uploads"));
 app.use(
   cors({
-    origin: process.env.CLIENT_URI,
+    origin: [process.env.CLIENT_URI, process.env.ADMIN_URI],
     credentials: true,
   })
 );
