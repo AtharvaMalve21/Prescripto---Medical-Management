@@ -1,5 +1,6 @@
 import { createContext, useEffect, useState } from "react";
 import axios from "axios";
+import { Loader } from "lucide-react";
 
 export const AdminContext = createContext({});
 
@@ -10,8 +11,11 @@ export const AdminContextProvider = ({ children }) => {
 
   const URI = import.meta.env.VITE_BACKEND_URI;
 
+  const [loading, setLoading] = useState(true);
+
   const adminProfile = async () => {
     try {
+      setLoading(true);
       const { data } = await axios.get(URI + "/api/admin/profile", {
         withCredentials: true,
       });
@@ -22,6 +26,8 @@ export const AdminContextProvider = ({ children }) => {
       }
     } catch (err) {
       console.log(err.response.data.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -36,5 +42,9 @@ export const AdminContextProvider = ({ children }) => {
     adminProfile();
   }, [admin]);
 
-  return <AdminContext.Provider value={value}>{children}</AdminContext.Provider>;
+  return (
+    <AdminContext.Provider value={value}>
+      {loading ? <Loader /> : children}
+    </AdminContext.Provider>
+  );
 };

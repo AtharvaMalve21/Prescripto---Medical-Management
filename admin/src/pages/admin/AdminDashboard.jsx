@@ -27,7 +27,6 @@ const AdminDashboard = () => {
         navigate("/");
       }
     } catch (err) {
-      
       toast.error(err.response?.data.message);
     }
   };

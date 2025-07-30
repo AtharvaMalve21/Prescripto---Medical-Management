@@ -1,16 +1,19 @@
 import { createContext, useState, useEffect } from "react";
 import axios from "axios";
+import { Loader } from "lucide-react";
 
 export const DoctorContext = createContext({});
 
 export const DoctorContextProvider = ({ children }) => {
   const [doctor, setDoctor] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [isDoctorLoggedIn, setIsDoctorLoggedIn] = useState(false);
 
   const URI = import.meta.env.VITE_BACKEND_URI;
 
   const doctorProfile = async () => {
     try {
+      setLoading(true);
       const { data } = await axios.get(URI + "/api/auth/doctor-profile", {
         withCredentials: true,
       });
@@ -21,6 +24,8 @@ export const DoctorContextProvider = ({ children }) => {
       }
     } catch (err) {
       console.log(err.response?.data.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -36,6 +41,8 @@ export const DoctorContextProvider = ({ children }) => {
   }, []);
 
   return (
-    <DoctorContext.Provider value={value}>{children}</DoctorContext.Provider>
+    <DoctorContext.Provider value={value}>
+      {loading ? <Loader /> : children}
+    </DoctorContext.Provider>
   );
 };
