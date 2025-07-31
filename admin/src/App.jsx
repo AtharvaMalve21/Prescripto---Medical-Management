@@ -10,14 +10,16 @@ import AllAppointments from "./pages/admin/AllAppointments";
 import AddDoctor from "./pages/admin/AddDoctor";
 import DoctorsList from "./pages/admin/DoctorsList";
 import AdminLayout from "./pages/admin/AdminLayout";
+import DoctorLayout from "./pages/doctor/DoctorLayout";
+import DoctorAppointments from "./pages/doctor/DoctorAppointments";
+import NotFound from "./pages/NotFound";
+import DoctorProfile from "./pages/doctor/DoctorProfile";
 
 const App = () => {
   const { admin, isAdminLoggedIn } = useContext(AdminContext);
   const { doctor, isDoctorLoggedIn } = useContext(DoctorContext);
 
   return (
-
-    
     <Routes>
       {/* Public Route */}
       <Route
@@ -31,7 +33,6 @@ const App = () => {
         }
       />
 
-
       {/* Admin Protected Route */}
       <Route
         path="/admin"
@@ -43,6 +44,7 @@ const App = () => {
           </ProtectedRoute>
         }
       />
+
       <Route
         path="/all-appointments"
         element={
@@ -74,16 +76,41 @@ const App = () => {
         }
       />
 
-
       {/* Doctor Protected Route */}
       <Route
         path="/doctor"
         element={
           <ProtectedRoute isAllowed={isDoctorLoggedIn}>
-            <DoctorDashboard />
+            <DoctorLayout>
+              <DoctorDashboard />
+            </DoctorLayout>
           </ProtectedRoute>
         }
       />
+
+      <Route
+        path="/doctor-appointments"
+        element={
+          <ProtectedRoute isAllowed={isDoctorLoggedIn}>
+            <DoctorLayout>
+              <DoctorAppointments />
+            </DoctorLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/doctor-profile"
+        element={
+          <ProtectedRoute isAllowed={isDoctorLoggedIn}>
+            <DoctorLayout>
+              <DoctorProfile />
+            </DoctorLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 };

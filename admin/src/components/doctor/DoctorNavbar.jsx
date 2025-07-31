@@ -1,18 +1,19 @@
-import React, { useContext, useState } from "react";
-import { DoctorContext } from "../../context/DoctorContext";
-import { assets } from "../../assets/assets_admin/assets.js";
+import React, { useContext } from "react";
+import { LogOut } from "lucide-react";
 import axios from "axios";
+import { assets } from "../../assets/assets_admin/assets.js";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
-import { LogOut } from "lucide-react";
+import { DoctorContext } from "../../context/DoctorContext.jsx";
 import Loader from "../Loader.jsx";
+import { useState } from "react";
 
 const DoctorNavbar = () => {
-  const [showDropdown, setShowDropdown] = useState(false);
-  const { doctor, setDoctor, setIsDoctorLoggedIn } = useContext(DoctorContext);
-  const navigate = useNavigate();
-  const URI = import.meta.env.VITE_BACKEND_URI;
+  const { setDoctor, setIsDoctorLoggedIn } = useContext(DoctorContext);
   const [loading, setLoading] = useState(false);
+
+  const URI = import.meta.env.VITE_BACKEND_URI;
+  const navigate = useNavigate();
 
   const logoutHandler = async () => {
     try {
@@ -20,6 +21,8 @@ const DoctorNavbar = () => {
       const { data } = await axios.get(URI + "/api/auth/logout-doctor", {
         withCredentials: true,
       });
+
+
       if (data.success) {
         setDoctor(null);
         setIsDoctorLoggedIn(false);
@@ -27,57 +30,36 @@ const DoctorNavbar = () => {
         navigate("/");
       }
     } catch (err) {
-      console.log(err.message);
-      toast.error(err.response?.data.message);
+      toast.error(err.response?.data.message || "Logout failed");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="flex justify-between items-center px-4 sm:px-10 py-3 border-b bg-white relative">
+    <div className="flex justify-between items-center px-4 sm:px-10 py-3 border-b border-gray-200 bg-white shadow-md z-50">
       {loading && <Loader />}
-      {/* Left: Logo + Panel Label */}
-      <div className="flex items-center gap-2 text-sm font-semibold text-gray-800">
+      {/* Logo and Label */}
+      <div className="flex items-center gap-3">
         <img
           className="w-36 sm:w-40 cursor-pointer"
           src={assets.admin_logo}
           alt="logo"
         />
-        <p className="hidden sm:block text-sm px-3 py-1 border border-primary bg-primary/10 text-primary font-medium rounded-full shadow-sm">
+        <span className="hidden sm:inline-block text-sm px-3 py-1 bg-primary/10 text-primary border border-primary rounded-full shadow-sm">
           Doctor Panel
-        </p>
+        </span>
       </div>
 
-      {/* Right: Avatar + Dropdown */}
-      <div
-        className="relative group cursor-pointer"
-        onClick={() => setShowDropdown((prev) => !prev)}
-      >
-        {doctor?.image ? (
-          <img
-            src={doctor.image}
-            alt="doctor-avatar"
-            className="w-10 h-10 rounded-full object-cover border-2 border-primary hover:scale-105 hover:shadow-md transition-all duration-300"
-          />
-        ) : (
-          <div className="w-10 h-10 flex items-center justify-center rounded-full bg-primary text-white font-bold text-lg uppercase hover:scale-105 hover:shadow-md transition-all duration-300">
-            {doctor?.name?.charAt(0)}
-          </div>
-        )}
-
-        {/* Dropdown */}
-        {showDropdown && (
-          <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden z-10">
-            <button
-              onClick={logoutHandler}
-              className="w-full flex items-center gap-2 text-left px-5 py-3 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
-            >
-              <LogOut className="w-4 h-4" />
-              Logout
-            </button>
-          </div>
-        )}
+      {/* Logout Button - moved right */}
+      <div className="relative">
+        <button
+          onClick={logoutHandler}
+          className="group flex items-center gap-2 px-4 py-2 bg-primary/10 hover:bg-primary/20 text-primary border border-primary hover:border-primary-dark font-medium text-sm rounded-full transition-all duration-200 shadow-sm"
+        >
+          <LogOut className="w-4 h-4 group-hover:rotate-[-15deg] transition-transform duration-300" />
+          <span className="hidden sm:inline">Logout</span>
+        </button>
       </div>
     </div>
   );

@@ -6,6 +6,9 @@ import {
   addDoctor,
   getAllDoctors,
   toggleDoctorAvailablity,
+  appointmentsList,
+  cancelAppointment,
+  getStats,
 } from "../controllers/admin.controller.js";
 import { isAdminAuthenticated } from "../middleware/auth.middleware.js";
 import { upload } from "../middleware/multer.middleware.js";
@@ -32,5 +35,11 @@ router.post(
 router.get("/doctors", isAdminAuthenticated, getAllDoctors);
 
 router.get("/doctor/:id", isAdminAuthenticated, toggleDoctorAvailablity);
+
+router.get("/appointments", isAdminAuthenticated, appointmentsList);
+
+router.delete("/appointment/:id", isAdminAuthenticated, cancelAppointment);
+
+router.get("/stats", isAdminAuthenticated, getStats);
 
 export default router;

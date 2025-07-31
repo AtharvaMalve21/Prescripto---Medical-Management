@@ -7,6 +7,7 @@ import { appointmentPaymentEmailTemplate } from "../utils/emailTemplate.js";
 
 export const paymentRazorPay = async (req, res) => {
   try {
+    
     //find the appointment
     const { id: appointmentId } = req.params;
 

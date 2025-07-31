@@ -1,9 +1,11 @@
 import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
+import dotenv, { populate } from "dotenv";
 dotenv.config();
 import { v2 as cloudinary } from "cloudinary";
 import bcrypt from "bcrypt";
+import User from "../models/user.model.js";
 import Doctor from "../models/doctor.model.js";
+import Appointment from "../models/appointment.model.js";
 import fs from "fs";
 
 export const adminLogin = async (req, res) => {
@@ -227,7 +229,105 @@ export const toggleDoctorAvailablity = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: "Doctor status changed",
+      message: "Doctor availability changed",
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
+//get all appointments list
+export const appointmentsList = async (req, res) => {
+  try {
+    const appointments = await Appointment.find({})
+      .populate({
+        path: "patient",
+
+        populate: {
+          path: "additionalDetails",
+        },
+      })
+      .populate("doctor");
+    return res.status(200).json({
+      success: true,
+      data: appointments,
+      message: "Appointments data fetched",
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
+//delete an appointment
+export const cancelAppointment = async (req, res) => {
+  try {
+    //find the appointment
+    const { id: appointmentId } = req.params;
+    const appointment = await Appointment.findById(appointmentId);
+    if (!appointment) {
+      return res.status(400).json({
+        success: false,
+        message: "Appointment not found with the provided id.",
+      });
+    }
+
+    //update the appointment status
+    await Appointment.findByIdAndUpdate(appointmentId, {
+      status: "cancelled",
+    });
+
+    //update the doctor model
+    const doctor = await Doctor.findById(appointment.doctor);
+
+    let slots_booked = doctor.slots_booked;
+
+    slots_booked[appointment.slotDate] = slots_booked[
+      appointment.slotDate
+    ].filter((e) => e !== appointment.slotTime);
+
+    await Doctor.findByIdAndUpdate(doctor._id, {
+      slots_booked: slots_booked,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Appointment cancelled successfully.",
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
+export const getStats = async (req, res) => {
+  try {
+    const totalPatients = await User.countDocuments();
+
+    const totalDoctors = await Doctor.countDocuments();
+
+    const totalAppointments = await Appointment.countDocuments();
+
+    const latestAppointments = await Appointment.find({})
+      .populate("patient doctor")
+      .sort({ createdAt: -1 })
+      .limit(5);
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        totalPatients,
+        totalDoctors,
+        totalAppointments,
+        latestAppointments,
+      },
     });
   } catch (err) {
     res.status(500).json({
