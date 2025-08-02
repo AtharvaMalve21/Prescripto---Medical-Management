@@ -8,6 +8,7 @@ import { DoctorContext } from "../../context/DoctorContext.jsx";
 import Loader from "../Loader.jsx";
 import { useState } from "react";
 
+
 const DoctorNavbar = () => {
   const { setDoctor, setIsDoctorLoggedIn } = useContext(DoctorContext);
   const [loading, setLoading] = useState(false);
