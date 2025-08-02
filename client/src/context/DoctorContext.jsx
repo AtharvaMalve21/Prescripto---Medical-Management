@@ -4,6 +4,7 @@ import { toast } from "react-hot-toast";
 
 export const DoctorContext = createContext({});
 
+
 export const DoctorContextProvider = ({ children }) => {
   const [doctors, setDoctors] = useState([]);
 
