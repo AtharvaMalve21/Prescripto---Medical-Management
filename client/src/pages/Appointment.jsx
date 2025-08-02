@@ -6,6 +6,7 @@ import { assets } from "../assets/assets_frontend/assets.js";
 import Loader from "../components/Loader.jsx";
 import { UserContext } from "../context/UserContext.jsx";
 
+
 const Appointment = () => {
   const { id } = useParams();
   const { user } = useContext(UserContext);
