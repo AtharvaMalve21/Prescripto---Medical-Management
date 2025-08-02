@@ -10,6 +10,7 @@ const navItemClass = ({ isActive }) =>
        : "text-gray-700 hover:bg-gray-100/90 hover:text-primary"
    }`;
 
+
 const DoctorSidebar = () => {
   return (
     <div className="py-6">
